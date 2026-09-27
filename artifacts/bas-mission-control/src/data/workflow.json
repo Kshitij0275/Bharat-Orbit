@@ -1,0 +1,118 @@
+{
+  "workflow_metadata": {
+    "id": "bas-workflow-catalog",
+    "title": "Handbook for Use of Laboratory in Kibo",
+    "source": "Handbook for Use of Laboratory in Kibo",
+    "source_document": "Handbook for Use of Laboratory in Kibo",
+    "source_version": "E-version, revised Feb. 2014",
+    "import_status": "imported_from_attached_workflow_metadata",
+    "note": "Official lifecycle metadata below is imported from the attached structured source. It is a planning/reference handbook, not a single executable astronaut procedure; missing experiment-specific actions remain explicit.",
+    "actors": [
+      "Principle investigators / researchers / proposing party",
+      "JAXA",
+      "ISS management",
+      "Astronauts / crew",
+      "Launch personnel",
+      "Space agencies and Ethical Review Boards",
+      "Ground / earth operators",
+      "Johnson Space Center"
+    ],
+    "systems": [
+      "Kibo Pressurized Module",
+      "International Space Station",
+      "Mounted experiment systems",
+      "Proposing-party experiment tools/systems",
+      "Transport spacecraft / launch vehicles",
+      "Cell Biology Experiment Facility",
+      "User Laptop Computer",
+      "Ground communication and monitoring"
+    ]
+  },
+  "workflow_steps": [
+    { "id": "WF-001", "type": "action", "name": "Understand space-experiment constraints", "actor": "PI / researcher", "action": "Plan the experiment with microgravity, manned-facility safety, transport, crew-time, and refrigeration/freezing constraints.", "next": ["WF-002"], "source_reference": "PDF p. 95, Section 1" },
+    { "id": "WF-002", "type": "action", "name": "Specify experiment requirements", "actor": "PI / researcher", "action": "Specify the experiment type, methods, procedures, and rationale.", "next": ["WF-003"], "source_reference": "PDF p. 95, Section 2" },
+    { "id": "WF-003", "type": "action", "name": "Define experiment resources", "actor": "PI / researcher with JAXA examination", "action": "Determine launch and collection weight, astronaut work period, power, heat, communication, and refrigeration/freezing requirements.", "next": ["WF-004"], "source_reference": "PDF p. 96, Section 3" },
+    { "id": "WF-004", "type": "action", "name": "Evaluate scientific and mounting feasibility", "actor": "JAXA / technical and scientific evaluators", "action": "Conduct scientific and technical/mounting-feasibility evaluation, identify risk factors, and suggest improvements.", "next": ["WF-005"], "source_reference": "PDF pp. 92, 95, Sections 1-2" },
+    { "id": "WF-005", "type": "action", "name": "Return feasibility evaluation results", "actor": "JAXA", "action": "Return mounting-feasibility results, technical problems, and suggested improvement measures.", "next": ["DEC-001"], "source_reference": "PDF p. 95, Section 2" },
+    { "id": "WF-006", "type": "action", "name": "Solve identified preparation-stage problems", "actor": "Selected researchers / proposing party with JAXA cooperation", "action": "Work on solving identified problems during space-experiment preparation.", "next": ["WF-007"], "source_reference": "PDF p. 95, Section 2" },
+    { "id": "WF-007", "type": "action", "name": "Design, test and verify safety", "actor": "JAXA mainly; proposing party when alternatives are needed", "action": "Identify hazards, specify controls and verification, perform required design/testing, and complete safety examination.", "next": ["DEC-002"], "source_reference": "PDF pp. 97-98, Section 4" },
+    { "id": "WF-008", "type": "action", "name": "Develop alternative ideas when safety cannot be ensured", "actor": "Proposing party", "action": "Provide alternative ideas when sample or reagent safety cannot be ensured.", "next": ["WF-007"], "condition": "Safety cannot be ensured", "source_reference": "PDF pp. 97, 101, 103" },
+    { "id": "WF-009", "type": "action", "name": "Prepare life-science samples for planned launch", "actor": "Life-science PI / researcher", "action": "Prepare and procure biological samples for the planned launch date.", "next": ["DEC-003"], "source_reference": "PDF p. 99, Section 5.1" },
+    { "id": "WF-010", "type": "action", "name": "Prepare backup life-science samples", "actor": "Life-science PI / researcher", "action": "Prepare backup samples at the launch location when short-lived biological samples could be affected by launch delay.", "next": ["WF-011"], "condition": "Biological sample has a short life", "source_reference": "PDF p. 99, Section 5.1" },
+    { "id": "WF-011", "type": "action", "name": "Prepare life-science sample/device set and information", "actor": "Life-science PI / researcher", "action": "Provide sample and device information, prepare sufficient on-orbit and control quantities, and ensure equipment compatibility.", "next": ["DEC-004"], "source_reference": "PDF p. 99, Section 5.1" },
+    { "id": "WF-012", "type": "action", "name": "Use JAXA-provided experiment system", "actor": "Life-science PI / researcher", "action": "Keep the experiment within the checked function/performance range of the JAXA-provided system and do not modify it in principle.", "next": ["WF-014"], "condition": "Experiment uses a JAXA experiment system in Table 1.4", "source_reference": "PDF p. 100, Section 5.1" },
+    { "id": "WF-013", "type": "action", "name": "Develop and verify proposing-party experiment system", "actor": "Proposing party", "action": "Describe, design, manufacture, test, and function-verify a proposing-party system, including microgravity operation.", "next": ["WF-014"], "condition": "Experiment uses proposing-party tools or systems", "source_reference": "PDF p. 100, Section 5.1" },
+    { "id": "WF-014", "type": "action", "name": "Provide reagent/tool information and enforce liquid/sharp-edge controls", "actor": "Life-science team / JAXA safety process", "action": "Provide reagent and tool information, pass safety evaluation, contain hazards, prevent liquid leakage, and avoid sharp-edged tools in principle.", "next": ["WF-015"], "source_reference": "PDF p. 101, Section 5.1" },
+    { "id": "WF-015", "type": "action", "name": "Load life-science materials using spacecraft-specific constraints", "actor": "Launch / transport personnel", "action": "Load according to spacecraft-specific windows, storage environments, transport capacity, and environmental restrictions.", "next": ["WF-016"], "source_reference": "PDF p. 101, Section 5.1" },
+    { "id": "WF-016", "type": "action", "name": "Execute life-science pre-start sequence", "actor": "Launch personnel / transport system / ISS crew", "action": "Final preparation on Earth → handover → spacecraft loading → transport to ISS → experiment-system setup on ISS.", "next": ["WF-017"], "source_reference": "PDF p. 102, Section 5.1" },
+    { "id": "WF-017", "type": "action", "name": "Wait until life-science experiment can start", "actor": "Kibo / ISS operations", "action": "Observe the stated restriction of at least 5 days after launch before experiment start.", "next": ["WF-018"], "source_reference": "PDF p. 102, Section 5.1" },
+    { "id": "WF-018", "type": "action", "name": "Execute life-science on-orbit experiment", "actor": "Astronauts / experiment operators", "action": "Execute the specified experiment procedure, timing, devices, and tolerable operating range.", "next": ["WF-019"], "source_reference": "PDF pp. 102-103, Section 5.1" },
+    { "id": "WF-019", "type": "action", "name": "Monitor life-science experiment", "actor": "Ground / earth operators and Kibo experiment system", "action": "Downlink important status and operating information when possible; distinguish real-time from recorded data.", "next": ["DEC-005"], "source_reference": "PDF pp. 103-104, Section 5.1" },
+    { "id": "WF-020", "type": "action", "name": "Store and collect life-science samples", "actor": "ISS / Kibo operations; recovery / ground facilities", "action": "Store samples on orbit and arrange collection/return within return-mass and recovery constraints.", "next": ["END"], "source_reference": "PDF p. 104, Section 5.1" },
+    { "id": "WF-021", "type": "action", "name": "Obtain space-medicine subject approval and consent", "actor": "Space agencies / Ethical Review Boards / experiment team", "action": "Obtain required approvals and explain the experiment to candidate crew before obtaining consent.", "next": ["WF-022"], "source_reference": "PDF p. 105, Section 5.2" },
+    { "id": "WF-022", "type": "action", "name": "Plan baseline data collection and launch timing", "actor": "Space-medicine experiment team", "action": "Plan baseline and ground data acquisition around launch, pre-launch crew movement, and possible post-return system needs.", "next": ["WF-023"], "source_reference": "PDF p. 105, Section 5.2" },
+    { "id": "WF-023", "type": "action", "name": "Define subjects, intervention conditions and measurements", "actor": "PI / researcher", "action": "Specify operators, subject requirements, interventions, measurements, apparatus, experiment timing, and crew restrictions.", "next": ["WF-024"], "source_reference": "PDF pp. 105-106, Section 5.2" },
+    { "id": "WF-024", "type": "action", "name": "Use or develop space-medicine experiment equipment", "actor": "PI / researcher / proposing party", "action": "Use checked JAXA capability or develop, test, verify, and safety-re-evaluate proposing-party equipment for space use.", "next": ["WF-025"], "source_reference": "PDF p. 105, Section 5.2" },
+    { "id": "WF-025", "type": "action", "name": "Provide space-medicine reagent/tool information and controls", "actor": "Space-medicine team / JAXA safety process", "action": "Provide material information, pass safety evaluation, control liquids and hazards, and establish special conditions for sharp instruments.", "next": ["WF-026"], "source_reference": "PDF p. 106, Section 5.2" },
+    { "id": "WF-026", "type": "action", "name": "Wait for space-medicine experiment start window", "actor": "ISS / Kibo operations", "action": "Observe the approximately one-week post-launch restriction and restrictions during the first few weeks.", "next": ["WF-027"], "source_reference": "PDF p. 106, Section 5.2" },
+    { "id": "WF-027", "type": "action", "name": "Execute and monitor space-medicine on-orbit experiment", "actor": "Astronaut / test subject; experiment operators; ground team", "action": "Execute defined procedures and monitor available data, respecting uplink and data restrictions.", "next": ["WF-028"], "source_reference": "PDF pp. 107-108, Section 5.2" },
+    { "id": "WF-028", "type": "action", "name": "Conduct post-return space-medicine experiments", "actor": "Space-medicine experiment team / JSC", "action": "Conduct post-return experiments at Johnson Space Center within the stated day-of-return and first-10-days restrictions.", "next": ["END"], "source_reference": "PDF p. 108, Section 5.2" },
+    { "id": "WF-029", "type": "action", "name": "Prepare material/physical-science samples", "actor": "Material/physical-science PI / researcher", "action": "Plan sample species and quantity within equipment restrictions and ensure equipment compatibility.", "next": ["WF-030"], "source_reference": "PDF p. 109, Section 5.3" },
+    { "id": "WF-030", "type": "action", "name": "Use or develop material/physical-science experiment system", "actor": "PI / researcher / proposing party", "action": "Use checked JAXA capability or describe, develop, test, and verify a proposing-party system for microgravity.", "next": ["WF-031"], "source_reference": "PDF p. 110, Section 5.3" },
+    { "id": "WF-031", "type": "action", "name": "Provide material-science reagent/tool information and controls", "actor": "Material/physical-science team / JAXA safety process", "action": "Provide material information, pass safety evaluation, contain hazards, prevent liquid leakage, and avoid sharp-edged tools in principle.", "next": ["WF-032"], "source_reference": "PDF p. 111, Section 5.3" },
+    { "id": "WF-032", "type": "action", "name": "Transport and load material-science samples", "actor": "Launch / transport personnel", "action": "Transport materials to Johnson Space Center and stay within spacecraft storage and environmental restrictions.", "next": ["WF-033"], "source_reference": "PDF p. 111, Section 5.3" },
+    { "id": "WF-033", "type": "action", "name": "Execute material-science pre-start sequence", "actor": "Launch personnel / transport system / ISS crew", "action": "Final preparation on Earth → handover → spacecraft loading → transport to ISS → experiment-system setup on ISS.", "next": ["WF-034"], "source_reference": "PDF p. 111, Section 5.3" },
+    { "id": "WF-034", "type": "action", "name": "Wait until material-science experiment can start", "actor": "ISS / Kibo operations", "action": "The source contains both at least 35 days and at least 5 days after launch; this conflict is preserved as unclear.", "next": ["WF-035"], "source_reference": "PDF p. 111, Section 5.3" },
+    { "id": "WF-035", "type": "action", "name": "Execute material-science on-orbit experiment", "actor": "Astronauts / experiment operators", "action": "Execute defined operations with specified devices, timing, tolerable range, and repeated-operation intervals.", "next": ["WF-036"], "source_reference": "PDF p. 112, Section 5.3" },
+    { "id": "WF-036", "type": "action", "name": "Monitor and manage material-science experiment", "actor": "Ground / earth operators and Kibo experiment system", "action": "Downlink important data when possible and account for restrictions on procedure or timing changes through uplink.", "next": ["DEC-006"], "source_reference": "PDF pp. 112-113, Section 5.3" },
+    { "id": "WF-037", "type": "action", "name": "Store and collect material-science samples", "actor": "ISS / Kibo operations; recovery / ground facilities", "action": "Store, collect, return, and hand over material-science samples within the stated transport and recovery limitations.", "next": ["END"], "source_reference": "PDF p. 113, Section 5.3" }
+  ],
+  "workflow_decisions": [
+    { "id": "DEC-001", "condition": "Proposal selected after scientific and mounting-feasibility evaluation?", "true_next": "WF-006", "false_next": "END", "source_reference": "PDF p. 95, Section 2" },
+    { "id": "DEC-002", "condition": "Safety can be ensured and the safety examination is passed?", "true_next": "DEC-007", "false_next": "WF-008", "source_reference": "PDF p. 97, Section 4" },
+    { "id": "DEC-003", "condition": "Life-science biological sample has a short life?", "true_next": "WF-010", "false_next": "WF-011", "source_reference": "PDF p. 99, Section 5.1" },
+    { "id": "DEC-004", "condition": "Experiment uses a JAXA experiment system in Table 1.4?", "true_next": "WF-012", "false_next": "WF-013", "source_reference": "PDF p. 100, Section 5.1" },
+    { "id": "DEC-005", "condition": "On-orbit monitoring permits and indicates a procedure change?", "true_next": "WF-018", "false_next": "WF-020", "source_reference": "PDF pp. 103-104, Section 5.1" },
+    { "id": "DEC-006", "condition": "Material/physical-science experiment is repeated?", "true_next": "WF-035", "false_next": "WF-037", "source_reference": "PDF p. 112, Section 5.3" },
+    { "id": "DEC-007", "condition": "Is the experiment a life-science experiment?", "true_next": "WF-009", "false_next": "DEC-008", "source_reference": "PDF pp. 95-110, Sections 5.1-5.3" },
+    { "id": "DEC-008", "condition": "Is the experiment a space-medicine experiment?", "true_next": "WF-021", "false_next": "WF-029", "source_reference": "PDF pp. 105, 109, Sections 5.2-5.3" }
+  ],
+  "workflow_loops": [
+    { "id": "LOOP-001", "condition": "Safety cannot be ensured.", "from": "DEC-002", "to": "WF-008", "back_to": "WF-007", "source_reference": "PDF p. 97, Section 4" },
+    { "id": "LOOP-002", "condition": "On-orbit monitoring permits and indicates a life-science procedure change.", "from": "DEC-005", "to": "WF-018", "back_to": "WF-019", "source_reference": "PDF pp. 103-104, Section 5.1" },
+    { "id": "LOOP-003", "condition": "Material/physical-science experiment is repeated.", "from": "DEC-006", "to": "WF-035", "back_to": "WF-036", "source_reference": "PDF p. 112, Section 5.3" }
+  ],
+  "workflow_parallel_processes": [
+    { "id": "PAR-001", "name": "CBEF parallel-experiment capability", "description": "CBEF microgravity and artificial-gravity compartments can support parallel experiments, but the source does not specify branch synchronization or a join condition.", "branches": ["microgravity compartment", "artificial gravity compartment"], "join": "UNCLEAR_FROM_SOURCE", "source_reference": "PDF p. 30, Section 2.2" }
+  ],
+  "workflow_validation": {
+    "missing_information": [
+      "Actual experiment-specific on-orbit operation steps from start to completion are not supplied.",
+      "Exact acceptance/rejection workflow after safety or feasibility feedback is not fully specified.",
+      "Exact synchronization logic for CBEF parallel experiments is not specified."
+    ],
+    "ambiguous_information": [
+      "The handbook is a planning/reference handbook rather than a single executable procedure.",
+      "Some tables state constraints and requirements rather than explicit transitions.",
+      "Space-medicine equipment-source alternatives do not have separate downstream sequences."
+    ],
+    "contradictions": [
+      "Material and Physical Science contains both at least 35 days and at least 5 days after launch as the start restriction; this remains UNCLEAR_FROM_SOURCE."
+    ],
+    "assumptions_made": []
+  },
+  "prototype_camera_workflow": {
+    "id": "prototype-sample-handling",
+    "title": "ASTRONAUT SAMPLE HANDLING — PROTOTYPE",
+    "official": false,
+    "source": "Local prototype demonstration workflow; not an official JAXA procedure.",
+    "steps": [
+      { "id": "READY", "label": "IDLE / READY", "action": "IDLE", "requiredConfidence": 0.65 },
+      { "id": "REACH", "label": "REACH", "action": "REACHING", "requiredConfidence": 0.7 },
+      { "id": "GRAB", "label": "GRAB / PINCH", "action": "GRAB / PINCH", "requiredConfidence": 0.72 },
+      { "id": "MOVE", "label": "MOVE", "action": "MOVE / TRANSFER", "requiredConfidence": 0.72 },
+      { "id": "PLACE", "label": "PLACE", "action": "PLACE", "requiredConfidence": 0.72 },
+      { "id": "RETURN", "label": "RETURN TO READY", "action": "IDLE", "requiredConfidence": 0.65 }
+    ]
+  }
+}
