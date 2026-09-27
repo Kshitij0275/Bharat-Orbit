@@ -277,6 +277,7 @@ function useWebcamPose() {
   const inferenceBusyRef = useRef(false);
   const lastInferenceRef = useRef(0);
   const lastUiUpdateRef = useRef(0);
+  const cameraSessionRef = useRef(0);
   const previousPointsRef = useRef<NormalizedLandmark[]>([]);
   const activityHistoryRef = useRef<ActivityLabel[]>([]);
   const [status, setStatus] = useState<CameraStatus>('standby');
@@ -292,7 +293,7 @@ function useWebcamPose() {
     if (!landmarkerPromiseRef.current) {
       landmarkerPromiseRef.current = (async () => {
         try {
-          const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm');
+          const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm');
           const detector = await PoseLandmarker.createFromOptions(vision, {
             baseOptions: {
               modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
@@ -319,7 +320,7 @@ function useWebcamPose() {
     if (!handLandmarkerPromiseRef.current) {
       handLandmarkerPromiseRef.current = (async () => {
         try {
-          const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm');
+          const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm');
           const detector = await HandLandmarker.createFromOptions(vision, {
             baseOptions: {
               modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
@@ -446,6 +447,8 @@ function useWebcamPose() {
   }, []);
 
   const stopCamera = useCallback(() => {
+    cameraSessionRef.current += 1;
+    inferenceBusyRef.current = false;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -461,6 +464,7 @@ function useWebcamPose() {
 
   const startCamera = useCallback(async (requestedFacingMode: 'user' | 'environment' = facingMode) => {
     stopCamera();
+    const sessionId = cameraSessionRef.current;
      if (!navigator.mediaDevices?.getUserMedia) {
        setStatus('unsupported');
        setErrorMessage('This browser does not expose camera access. Use a current browser over HTTPS.');
@@ -470,6 +474,10 @@ function useWebcamPose() {
     setErrorMessage('');
     try {
        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: requestedFacingMode }, audio: false });
+      if (sessionId !== cameraSessionRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return false;
+      }
       streamRef.current = stream;
       if (!videoRef.current) return false;
       videoRef.current.srcObject = stream;
@@ -477,20 +485,22 @@ function useWebcamPose() {
       setStatus('live');
       const renderFrame = () => {
         const video = videoRef.current;
-        if (!video || !streamRef.current) return;
+        if (sessionId !== cameraSessionRef.current || !video || !streamRef.current) return;
         const now = performance.now();
         if (!inferenceBusyRef.current && now - lastInferenceRef.current > 100 && video.readyState >= 2) {
           lastInferenceRef.current = now;
           inferenceBusyRef.current = true;
            void getLandmarker().then(async (landmarker) => {
+             if (sessionId !== cameraSessionRef.current) return;
              if (!landmarker) {
                setStatus('model-error');
                setErrorMessage('Pose model could not be loaded. Check the network connection used for the model asset and try again.');
                return;
              }
-             if (!videoRef.current || !streamRef.current) return;
+             if (sessionId !== cameraSessionRef.current || !videoRef.current || !streamRef.current) return;
              const result = landmarker.detectForVideo(videoRef.current, performance.now());
              const handLandmarker = handEnabled ? await getHandLandmarker() : null;
+             if (sessionId !== cameraSessionRef.current) return;
              const handResult = handLandmarker ? handLandmarker.detectForVideo(videoRef.current, performance.now()) : { landmarks: [] };
             const landmarks = result.landmarks?.[0] ?? [];
              const hands = handResult.landmarks ?? [];
@@ -587,7 +597,7 @@ function Live() {
     lastVoiceRef.current = { message, at: now };
     speakGuidance(message);
   };
-  return <><PageHeader eyebrow="LIVE OBSERVATION / CAMERA 01" title="Live mission view" description="The webcam is the primary input. Pose and hand landmarks are processed locally in the browser; no object detection is claimed." actions={<><div className="tab-pills"><button className={feedMode === 'REAL CAMERA' ? 'active' : ''} onClick={() => setFeedMode('REAL CAMERA')} data-testid="tab-real-camera">LIVE CAMERA</button><button className={feedMode === 'DEMO SIMULATION' ? 'active' : ''} onClick={() => setFeedMode('DEMO SIMULATION')} data-testid="tab-demo-simulation">TEST / SIMULATION</button></div><button className={`button ${camera.status === 'live' ? 'button-danger' : 'button-primary'}`} onClick={camera.status === 'live' ? camera.stopCamera : startExperience} data-testid="button-live-toggle">{camera.status === 'live' ? <Square size={13} /> : <Camera size={13} />}{camera.status === 'live' ? 'STOP CAMERA' : 'START LIVE CAMERA'}</button></>} />
+  return <><PageHeader eyebrow="LIVE OBSERVATION / CAMERA 01" title="Live mission view" description="The webcam is the primary input. Pose and hand landmarks are processed locally in the browser; no object detection is claimed." actions={<><div className="tab-pills"><button className={feedMode === 'REAL CAMERA' ? 'active' : ''} onClick={() => setFeedMode('REAL CAMERA')} data-testid="tab-real-camera">LIVE CAMERA</button><button className={feedMode === 'DEMO SIMULATION' ? 'active' : ''} onClick={() => { camera.stopCamera(); setFeedMode('DEMO SIMULATION'); }} data-testid="tab-demo-simulation">TEST / SIMULATION</button></div><button className={`button ${camera.status === 'live' ? 'button-danger' : 'button-primary'}`} onClick={camera.status === 'live' ? camera.stopCamera : startExperience} data-testid="button-live-toggle">{camera.status === 'live' ? <Square size={13} /> : <Camera size={13} />}{camera.status === 'live' ? 'STOP CAMERA' : 'START LIVE CAMERA'}</button></>} />
      <div className="mb-4 flex flex-wrap items-center gap-2"><StatusBadge tone={camera.status === 'live' ? 'green' : 'orange'}>{camera.status === 'live' ? 'CAMERA CONNECTED' : feedMode === 'REAL CAMERA' ? 'CAMERA OFFLINE' : 'TEST / SIMULATION MODE'}</StatusBadge><span className="text-xs text-slate-500">CAM-01 / {camera.status === 'live' ? 'LIVE SENSOR' : 'AWAITING INPUT'}</span>{camera.status === 'live' && <span className="font-mono-data text-[10px] text-slate-500 sm:ml-auto">LOCAL INFERENCE · VIDEO 1280×720</span>}</div>
       <div className="grid gap-5 xl:grid-cols-[1.4fr_.6fr]"><CameraPanel running={running} errorMode={errorMode} feedMode={feedMode} camera={camera} showConfidence={settings.showConfidence} /><div className="space-y-5"><LiveActionAnalysis action={liveActivity} confidence={liveConfidence} expected={expectedPrototypeStep.label} status={sequenceStatus} pose={camera.pose} previous={actionHistory[1]} showConfidence={settings.showConfidence} showHistory={settings.showActionHistory} onVoice={() => voice()} onAcknowledge={() => setErrorMode(false)} voiceEnabled={settings.voiceAssistant && guidance} onToggleVoice={() => { setGuidance(!guidance); updateSettings({ voiceAssistant: !settings.voiceAssistant }); }} /><div className="panel p-4"><SectionLabel>CAMERA CONTROLS</SectionLabel><div className="grid grid-cols-2 gap-2"><button className="control-button" onClick={() => camera.status === 'live' ? camera.stopCamera() : startExperience()}><Camera size={14} /> {camera.status === 'live' ? 'Stop camera' : 'Start camera'}</button><button className="control-button" onClick={() => camera.status === 'live' ? camera.switchCamera() : startExperience()}><ArrowRight size={14} /> Switch camera</button><button className="control-button" onClick={() => window.alert('Camera stream re-synchronized locally.')}><RefreshCw size={14} /> Re-sync</button><button className="control-button" onClick={() => document.querySelector('.camera-surface')?.requestFullscreen?.()}><Monitor size={14} /> Fullscreen</button></div><div className="mt-3 flex items-center justify-between rounded border border-slate-200 px-3 py-2 text-[10px]"><span>POSE / HAND OVERLAY</span><button className={`switch ${settings.showPoseOverlay || settings.showHandLandmarks ? 'switch-on' : ''}`} onClick={() => updateSettings({ showPoseOverlay: !settings.showPoseOverlay, showHandLandmarks: !settings.showHandLandmarks })}><span /></button></div></div></div></div>
      {settings.showTelemetry && <MissionTelemetry telemetry={{ ...telemetry, cameraFps: camera.status === 'live' ? telemetry.cameraFps : 0, aiLatency: camera.status === 'live' ? telemetry.aiLatency : 0 }} />}<div className="mt-5 grid gap-5 lg:grid-cols-[1fr_1fr_.8fr]"><LiveConfidenceGraph data={confidenceHistory} /><ActionEventStream events={actionHistory} /><SequenceStrip status={sequenceStatus} step={prototypeIndex} /></div>
@@ -639,7 +649,7 @@ function HandIcon() { return <div className="hand-icon-shape"><span /><span /><s
 
 function ActivityPage() {
   const { stepIndex } = useMission();
-  return <><PageHeader eyebrow="ACTIVITY RECOGNITION / TEMPORAL WINDOW" title="Activity model" description="The current label is fused with what came before and what is expected next." actions={<StatusBadge tone="orange">WINDOW 2.4s</StatusBadge>} /><div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]"><div className="panel p-5"><SectionLabel>CURRENT ACTIVITY</SectionLabel><div className="activity-number">04</div><h2 className="mt-2 text-xl font-extrabold">Transfer sample to tray</h2><p className="mt-1 text-sm text-slate-500">Hand-object motion and tray proximity are jointly classified.</p><div className="mt-5"><div className="mb-2 flex justify-between text-xs"><span>MODEL CONFIDENCE</span><b className="text-cyan-700">88.7%</b></div><div className="confidence-track h-3"><div className="confidence-fill fill-cyan" style={{ width: '88.7%' }} /></div></div><div className="mt-5 grid grid-cols-2 gap-2"><div className="metric-box"><span className="eyebrow">DURATION</span><b>00:41</b></div><div className="metric-box"><span className="eyebrow">TRACK ID</span><b>P-01</b></div></div></div><div className="panel p-5"><SectionLabel>TEMPORAL ACTIVITY TIMELINE</SectionLabel><div className="activity-timeline">{steps.map((step, index) => <div className={`activity-event ${index === stepIndex ? 'event-current' : ''}`} key={step.id}><div className="event-time font-mono-data">{index < stepIndex ? `10:4${index + 1}:2${index}` : index === stepIndex ? 'NOW' : 'NEXT'}</div><div className={`event-node event-${step.state}`}><span /></div><div><b className="text-xs">{step.name}</b><div className="mt-1 text-[11px] text-slate-500">{index < stepIndex ? 'Completed / verified' : index === stepIndex ? 'Currently being evaluated' : 'Awaiting prior state'}</div></div><div className="ml-auto w-20"><div className="confidence-track"><div className={`confidence-fill ${step.confidence ? 'fill-cyan' : 'fill-slate'}`} style={{ width: `${step.confidence || 8}%` }} /></div>{step.confidence > 0 && <span className="font-mono-data text-[10px] text-slate-400">{step.confidence}%</span>}</div></div>)}</div></div></div><div className="mt-5 panel p-5"><SectionLabel>PREVIOUS / CURRENT / NEXT</SectionLabel><div className="grid gap-3 md:grid-cols-3"><div className="activity-card muted"><span className="eyebrow">PREVIOUS</span><b>Open containment sleeve</b><StatusBadge tone="green">VERIFIED</StatusBadge></div><div className="activity-card current"><span className="eyebrow text-orange-700">CURRENT</span><b>Transfer sample to tray</b><StatusBadge tone="orange">88.7% CONFIDENCE</StatusBadge></div><div className="activity-card muted"><span className="eyebrow">NEXT</span><b>Secure tray and verify</b><StatusBadge tone="slate">PENDING</StatusBadge></div></div></div></>;
+  return <><PageHeader eyebrow="ACTIVITY RECOGNITION / TEMPORAL WINDOW" title="Activity model" description="The current label is fused with what came before and what is expected next." actions={<StatusBadge tone="orange">WINDOW 2.4s</StatusBadge>} /><div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]"><div className="panel p-5"><SectionLabel>CURRENT ACTIVITY</SectionLabel><div className="activity-number">04</div><h2 className="mt-2 text-xl font-extrabold">Transfer sample to tray</h2><p className="mt-1 text-sm text-slate-500">Body movement and hand geometry are analysed as a prototype activity signal.</p><div className="mt-5"><div className="mb-2 flex justify-between text-xs"><span>MODEL CONFIDENCE</span><b className="text-cyan-700">88.7%</b></div><div className="confidence-track h-3"><div className="confidence-fill fill-cyan" style={{ width: '88.7%' }} /></div></div><div className="mt-5 grid grid-cols-2 gap-2"><div className="metric-box"><span className="eyebrow">DURATION</span><b>00:41</b></div><div className="metric-box"><span className="eyebrow">TRACK ID</span><b>P-01</b></div></div></div><div className="panel p-5"><SectionLabel>TEMPORAL ACTIVITY TIMELINE</SectionLabel><div className="activity-timeline">{steps.map((step, index) => <div className={`activity-event ${index === stepIndex ? 'event-current' : ''}`} key={step.id}><div className="event-time font-mono-data">{index < stepIndex ? `10:4${index + 1}:2${index}` : index === stepIndex ? 'NOW' : 'NEXT'}</div><div className={`event-node event-${step.state}`}><span /></div><div><b className="text-xs">{step.name}</b><div className="mt-1 text-[11px] text-slate-500">{index < stepIndex ? 'Completed / verified' : index === stepIndex ? 'Currently being evaluated' : 'Awaiting prior state'}</div></div><div className="ml-auto w-20"><div className="confidence-track"><div className={`confidence-fill ${step.confidence ? 'fill-cyan' : 'fill-slate'}`} style={{ width: `${step.confidence || 8}%` }} /></div>{step.confidence > 0 && <span className="font-mono-data text-[10px] text-slate-400">{step.confidence}%</span>}</div></div>)}</div></div></div><div className="mt-5 panel p-5"><SectionLabel>PREVIOUS / CURRENT / NEXT</SectionLabel><div className="grid gap-3 md:grid-cols-3"><div className="activity-card muted"><span className="eyebrow">PREVIOUS</span><b>Open containment sleeve</b><StatusBadge tone="green">VERIFIED</StatusBadge></div><div className="activity-card current"><span className="eyebrow text-orange-700">CURRENT</span><b>Transfer sample to tray</b><StatusBadge tone="orange">88.7% CONFIDENCE</StatusBadge></div><div className="activity-card muted"><span className="eyebrow">NEXT</span><b>Secure tray and verify</b><StatusBadge tone="slate">PENDING</StatusBadge></div></div></div></>;
 }
 
 function Sequence() {
@@ -652,7 +662,7 @@ function StateMachine({ errorMode }: { errorMode: boolean }) { return <div class
 function Alerts() {
   const { alerts } = useMission();
   const [filter, setFilter] = useState('ALL');
-  const data = [{ type: 'WARNING', title: 'Sequence confidence below threshold', copy: 'Transfer sample to tray is at 88.7%, below nominal 90% gate.', time: '10:42:32', confidence: '88.7%', tone: 'orange' as Tone }, { type: 'INFO', title: 'Camera stream synchronized', copy: 'CAM-01 is receiving simulated frames at 24 FPS.', time: '10:42:12', confidence: '—', tone: 'cyan' as Tone }, { type: 'CRITICAL', title: 'Out-of-sequence action', copy: 'Tray secure gesture observed before transfer gate acceptance.', time: '09:58:04', confidence: '64.2%', tone: 'red' as Tone }, { type: 'INFO', title: 'Voice guidance acknowledged', copy: 'Crew cue delivered through local audio channel.', time: '09:57:51', confidence: '—', tone: 'cyan' as Tone }];
+  const data = [{ type: 'WARNING', title: 'Sequence confidence below threshold', copy: 'Transfer sample to tray is at 88.7%, below nominal 90% gate.', time: '10:42:32', confidence: '88.7%', tone: 'orange' as Tone }, { type: 'INFO', title: 'Camera stream synchronized', copy: 'CAM-01 is ready for local camera input.', time: '10:42:12', confidence: '—', tone: 'cyan' as Tone }, { type: 'CRITICAL', title: 'Out-of-sequence action', copy: 'Tray secure gesture observed before transfer gate acceptance.', time: '09:58:04', confidence: '64.2%', tone: 'red' as Tone }, { type: 'INFO', title: 'Voice guidance acknowledged', copy: 'Crew cue delivered through local audio channel.', time: '09:57:51', confidence: '—', tone: 'cyan' as Tone }];
   const visible = filter === 'ALL' ? data : data.filter((item) => item.type === filter);
   return <><PageHeader eyebrow="EVENT MANAGEMENT / OPERATOR CUES" title="Alert center" description="Actionable deviations and system notices from the current demonstration run." actions={<button className="button button-ghost" onClick={() => window.alert('All visible alerts acknowledged for this demo run.')}><Check size={14} /> ACKNOWLEDGE ALL</button>} /><div className="grid gap-3 md:grid-cols-4"><KpiCard label="Open alerts" value={`${alerts}`} detail="requires operator review" tone="orange" icon={Bell} /><KpiCard label="Critical" value="01" detail="sequence deviation" tone="red" icon={Siren} /><KpiCard label="Warnings" value="01" detail="confidence threshold" tone="orange" icon={AlertTriangle} /><KpiCard label="Resolved" value="07" detail="this mission run" tone="green" icon={CheckCircle2} /></div><div className="mt-5 panel p-5"><div className="mb-4 flex flex-wrap items-center gap-2"><SectionLabel>ALERT QUEUE</SectionLabel><div className="ml-auto flex gap-1">{['ALL', 'CRITICAL', 'WARNING', 'INFO'].map((x) => <button onClick={() => setFilter(x)} className={`filter-pill ${filter === x ? 'selected' : ''}`} key={x} data-testid={`filter-alert-${x.toLowerCase()}`}>{x}</button>)}</div></div><div className="space-y-2">{visible.map((item, index) => <div className={`alert-row alert-${item.tone}`} key={`${item.title}-${index}`}><div className="alert-icon">{item.type === 'CRITICAL' ? <Siren size={16} /> : item.type === 'WARNING' ? <AlertTriangle size={16} /> : <Info size={16} />}</div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><b className="text-xs">{item.title}</b><StatusBadge tone={item.tone}>{item.type}</StatusBadge></div><p className="mt-1 text-[11px] text-slate-500">{item.copy}</p></div><div className="hidden text-right sm:block"><div className="font-mono-data text-[11px] text-slate-600">{item.time}</div><div className="mt-1 font-mono-data text-[10px] text-slate-400">{item.confidence}</div></div><button className="icon-button" onClick={() => window.alert(`${item.title} acknowledged.`)} aria-label={`Acknowledge ${item.title}`}><Check size={14} /></button></div>)}</div></div></>;
 }
